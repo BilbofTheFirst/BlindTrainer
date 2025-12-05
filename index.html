@@ -180,14 +180,17 @@
             La musique est lue directement via Spotify dans cette page.
         </div>
 
-        <div class="buttons-main">
-            <button id="show-answer" class="btn-primary">Afficher la réponse</button>
-        </div>
+     <div class="buttons-main">
+    <button id="show-answer" class="btn-primary">Afficher la réponse</button>
+    <button id="btn-ok" class="btn-ok" style="display:none;">OK (je connaissais)</button>
+    <button id="btn-ko" class="btn-ko" style="display:none;">KO (je ne connaissais pas)</button>
+   
+</div>
+
     </div>
 
 	<div id="buttons-bottom" class="buttons-bottom">
-		<button id="btn-ok" class="btn-ok">OK (je connaissais)</button>
-		<button id="btn-ko" class="btn-ko">KO (je ne connaissais pas)</button>
+		
 		<button id="btn-reset" class="btn-secondary">Réinitialiser</button>
 	</div>
 </div>
@@ -331,17 +334,7 @@
     }
 
     try {
-        // Sur mobile, il faut souvent "activer" l'élément audio
-        if (spotifyPlayer && !playerActivated) {
-            try {
-                await spotifyPlayer.activateElement();
-                playerActivated = true;
-            } catch (e) {
-                console.warn('activateElement a échoué (souvent normal la première fois)', e);
-            }
-        }
-
-        // 1) On transfère la lecture vers notre device (le met "actif")
+        // 1) On transfère la lecture vers notre device
         await fetch('https://api.spotify.com/v1/me/player', {
             method: 'PUT',
             headers: {
@@ -355,71 +348,93 @@
         });
 
         // 2) On joue le titre demandé sur ce device
-        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                uris: [currentTrack.uri]
-            })
-        });
+        await fetch(
+            `https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uris: [currentTrack.uri]
+                })
+            }
+        );
     } catch (e) {
         console.error('Erreur lors de la lecture Spotify', e);
     }
 }
 
 
-    function render() {
-        playlistNameEl.textContent = currentPlaylistName;
-        progressEl.textContent = `Restants : ${remainingTracks.length} / ${allTracks.length}`;
-		// Affichage des boutons OK/KO uniquement après avoir montré la réponse
-		if (showAnswer && remainingTracks.length > 0) {
-			buttonsBottomEl.style.display = 'flex';
-		} else {
-			buttonsBottomEl.style.display = 'none';
-		}
 
-        if (remainingTracks.length === 0) {
-            trackAreaEl.innerHTML = `
-                <div class="emoji">🎉</div>
-                <div class="done-message">Tu connais toute la playlist !</div>
-            `;
-            showAnswerBtn.disabled = true;
-            okBtn.disabled = true;
-            koBtn.disabled = true;
-            return;
-        }
+   function render() {
+    playlistNameEl.textContent = currentPlaylistName;
+    progressEl.textContent = `Restants : ${remainingTracks.length} / ${allTracks.length}`;
 
-        showAnswerBtn.disabled = showAnswer;
-        okBtn.disabled = false;
-        koBtn.disabled = false;
-
-        if (!showAnswer || !currentTrack) {
-            trackAreaEl.innerHTML = `
-                <div class="track-label">Écoute la musique…</div>
-                <div class="hidden-title">Titre caché</div>
-                <div class="track-artist">Artiste caché</div>
-            `;
-        } else {
-            trackAreaEl.innerHTML = `
-                <div class="track-label">Réponse :</div>
-                <div class="track-title">${currentTrack.title}</div>
-                <div class="track-artist">par ${currentTrack.artist}</div>
-            `;
-        }
+    if (remainingTracks.length === 0) {
+        trackAreaEl.innerHTML = `
+            <div class="emoji">🎉</div>
+            <div class="done-message">Tu connais toute la playlist !</div>
+        `;
+        showAnswerBtn.style.display = 'none';
+        okBtn.style.display = 'none';
+        koBtn.style.display = 'none';
+        okBtn.disabled = true;
+        koBtn.disabled = true;
+        return;
     }
+
+    // Gestion visibilité des boutons
+    if (!showAnswer) {
+        showAnswerBtn.style.display = 'inline-block';
+        okBtn.style.display = 'none';
+        koBtn.style.display = 'none';
+    } else {
+        showAnswerBtn.style.display = 'none';
+        okBtn.style.display = 'inline-block';
+        koBtn.style.display = 'inline-block';
+    }
+
+    okBtn.disabled = false;
+    koBtn.disabled = false;
+
+    if (!showAnswer || !currentTrack) {
+        trackAreaEl.innerHTML = `
+            <div class="track-label">Écoute la musique…</div>
+            <div class="hidden-title">Titre caché</div>
+            <div class="track-artist">Artiste caché</div>
+        `;
+    } else {
+        trackAreaEl.innerHTML = `
+            <div class="track-label">Réponse :</div>
+            <div class="track-title">${currentTrack.title}</div>
+            <div class="track-artist">par ${currentTrack.artist}</div>
+        `;
+    }
+}
 
     /********************
      * UI BUTTON EVENTS *
      ********************/
-    showAnswerBtn.addEventListener("click", () => {
-        if (!showAnswer && remainingTracks.length > 0) {
-            showAnswer = true;
-            render();
+showAnswerBtn.addEventListener("click", async () => {
+    // Sur beaucoup de navigateurs, il faut activer le player sur une interaction utilisateur
+    if (spotifyPlayer && !playerActivated) {
+        try {
+            await spotifyPlayer.activateElement();
+            playerActivated = true;
+            console.log('Player audio activé');
+        } catch (e) {
+            console.warn('activateElement a échoué', e);
         }
-    });
+    }
+
+    if (!showAnswer && remainingTracks.length > 0) {
+        showAnswer = true;
+        render();
+    }
+});
+
 
     okBtn.addEventListener("click", () => {
         if (!currentTrack) return;
