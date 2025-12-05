@@ -199,8 +199,8 @@
         </div>
 
         <div class="audio-hint">
-            Un extrait de 30s est joué automatiquement (si disponible).
-        </div>
+			Lance la playlist dans Spotify en mode aléatoire, et utilise cet écran pour t&#39;entraîner 🎧
+		</div>
 
         <div class="buttons-main">
             <button id="show-answer" class="btn-primary">Afficher la réponse</button>
@@ -509,39 +509,39 @@
     }
 
     async function loadPlaylistTracks(playlistId, playlistName) {
-        if (!accessToken) return;
-        try {
-            const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
-            const resp = await fetch(url, {
-                headers: { Authorization: 'Bearer ' + accessToken }
-            });
-            if (!resp.ok) {
-                console.error('Erreur tracks', resp.status);
-                alert("Erreur lors du chargement des morceaux.");
-                return;
-            }
-            const data = await resp.json();
-            const tracks = (data.items || [])
-                .map(item => item.track)
-                .filter(track => track && track.preview_url) // on garde seulement ceux avec un extrait
-                .map(track => ({
-                    id: track.id,
-                    title: track.name,
-                    artist: (track.artists && track.artists[0]) ? track.artists[0].name : '',
-                    previewUrl: track.preview_url
-                }));
-
-            if (!tracks.length) {
-                alert("Cette playlist n'a pas d'extraits audio (preview) utilisables. Essaie une autre playlist.");
-                return;
-            }
-
-            initGame(tracks, `Playlist : ${playlistName}`);
-        } catch (e) {
-            console.error('Erreur playlist tracks', e);
-            alert("Erreur lors du chargement de la playlist Spotify.");
+    if (!accessToken) return;
+    try {
+        const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+        const resp = await fetch(url, {
+            headers: { Authorization: 'Bearer ' + accessToken }
+        });
+        if (!resp.ok) {
+            console.error('Erreur tracks', resp.status);
+            alert("Erreur lors du chargement des morceaux.");
+            return;
         }
+        const data = await resp.json();
+        const tracks = (data.items || [])
+            .map(item => item.track)
+            .filter(track => track && track.id && track.name && track.artists && track.artists.length > 0) // on garde les vrais morceaux
+            .map(track => ({
+                id: track.id,
+                title: track.name,
+                artist: track.artists[0].name,
+                previewUrl: track.preview_url || null   // souvent null, mais ce n’est plus bloquant
+            }));
+
+        if (!tracks.length) {
+            alert("Cette playlist ne contient pas de morceaux exploitables (pistes vides ou non musicales).");
+            return;
+        }
+
+        initGame(tracks, `Playlist : ${playlistName}`);
+    } catch (e) {
+        console.error('Erreur playlist tracks', e);
+        alert("Erreur lors du chargement de la playlist Spotify.");
     }
+}
 
     function renderSpotifyArea() {
         const statusEl = document.getElementById('spotify-status');
