@@ -16,49 +16,41 @@
             align-items: center;
             min-height: 100vh;
         }
-
         .app {
             width: 100%;
             max-width: 480px;
             padding: 24px 16px 40px;
             box-sizing: border-box;
         }
-
         h1 {
             font-size: 1.3rem;
             margin: 0 0 8px;
             text-align: center;
         }
-
         .subtitle {
             text-align: center;
             font-size: 0.9rem;
             color: #9ca3af;
             margin-bottom: 16px;
         }
-
         .card {
             background: #1f2937;
             border-radius: 12px;
             padding: 12px 16px;
             margin-bottom: 16px;
         }
-
         .card-spotify {
             margin-bottom: 20px;
         }
-
         .spotify-status {
             font-size: 0.9rem;
             margin-bottom: 8px;
         }
-
         .spotify-actions button,
         .spotify-actions select,
         .spotify-actions label {
             font-size: 0.85rem;
         }
-
         .spotify-actions select {
             background: #111827;
             color: #e5e7eb;
@@ -69,38 +61,32 @@
             margin-top: 4px;
             max-width: 100%;
         }
-
         .playlist-name {
             font-size: 0.9rem;
             color: #9ca3af;
             margin-bottom: 4px;
         }
-
         .progress {
             font-size: 0.9rem;
             color: #9ca3af;
             margin-bottom: 8px;
         }
-
         .track-label {
             font-size: 1rem;
             margin-bottom: 12px;
             text-align: center;
         }
-
         .track-title {
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 4px;
             text-align: center;
         }
-
         .track-artist {
             font-size: 1rem;
             color: #9ca3af;
             text-align: center;
         }
-
         .hidden-title {
             font-size: 1.3rem;
             font-weight: 600;
@@ -108,7 +94,6 @@
             margin-bottom: 4px;
             text-align: center;
         }
-
         .buttons-main,
         .buttons-bottom {
             display: flex;
@@ -117,7 +102,6 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-
         button {
             border: none;
             border-radius: 999px;
@@ -126,48 +110,39 @@
             cursor: pointer;
             font-weight: 500;
         }
-
         .btn-primary {
             background: #3b82f6;
             color: white;
         }
-
         .btn-primary:disabled {
             opacity: 0.4;
             cursor: default;
         }
-
         .btn-ok {
             background: #22c55e;
             color: #022c22;
         }
-
         .btn-ko {
             background: #f97316;
             color: #111827;
         }
-
         .btn-secondary {
             background: #374151;
             color: #e5e7eb;
         }
-
         .btn-small {
             padding: 6px 10px;
             font-size: 0.8rem;
         }
-
         .done-message {
             font-size: 1.1rem;
             margin: 8px 0;
             text-align: center;
         }
-
         .emoji {
             font-size: 1.6rem;
             text-align: center;
         }
-
         .audio-hint {
             font-size: 0.8rem;
             color: #9ca3af;
@@ -180,10 +155,10 @@
 <div class="app">
     <h1>Blind Test – Entraînement</h1>
     <div class="subtitle">
-        Connecte-toi à Spotify, choisis une playlist, et entraîne-toi 🎧
+        Connecte-toi à Spotify, choisis une playlist, et laisse l&#39;app jouer les titres 🎧
     </div>
 
-    <!-- Carte Spotify (login + sélection playlist) -->
+    <!-- Carte Spotify (login + sélection playlist + player) -->
     <div class="card card-spotify">
         <div id="spotify-status" class="spotify-status"></div>
         <div id="spotify-actions" class="spotify-actions"></div>
@@ -199,8 +174,8 @@
         </div>
 
         <div class="audio-hint">
-			Lance la playlist dans Spotify en mode aléatoire, et utilise cet écran pour t&#39;entraîner 🎧
-		</div>
+            La musique est lue directement via Spotify dans cette page.
+        </div>
 
         <div class="buttons-main">
             <button id="show-answer" class="btn-primary">Afficher la réponse</button>
@@ -214,28 +189,30 @@
     </div>
 </div>
 
-<!-- Lecteur audio caché pour les previews Spotify -->
-<audio id="audio-player" style="display:none;"></audio>
+<!-- SDK Spotify -->
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 
 <script>
     /********************
      * CONFIG SPOTIFY   *
      ********************/
     const clientId = 'f2f3de9d08c74a71a97d8250b1864204'; 
-    const redirectUri = 'https://bilbofthefirst.github.io/BlindTrainer/'; 
-    const spotifyScopes = 'playlist-read-private playlist-read-collaborative';
+    const redirectUri = 'https://billbofthefirst.github.io/BlindTrainer/'; 
+
+    // On ajoute les scopes "streaming" + droits playback
+    const spotifyScopes =
+        'playlist-read-private playlist-read-collaborative streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
 
     /********************
      * STATE GLOBAL     *
      ********************/
-    // Structure Track: { id, title, artist, previewUrl? }
-
+    // Track: { id, title, artist, uri }
     const FAKE_TRACKS = [
-        { id: "1", title: "Billie Jean", artist: "Michael Jackson", previewUrl: null },
-        { id: "2", title: "Smells Like Teen Spirit", artist: "Nirvana", previewUrl: null },
-        { id: "3", title: "Shape of You", artist: "Ed Sheeran", previewUrl: null },
-        { id: "4", title: "Rolling in the Deep", artist: "Adele", previewUrl: null },
-        { id: "5", title: "Wonderwall", artist: "Oasis", previewUrl: null }
+        { id: "1", title: "Billie Jean", artist: "Michael Jackson", uri: "" },
+        { id: "2", title: "Smells Like Teen Spirit", artist: "Nirvana", uri: "" },
+        { id: "3", title: "Shape of You", artist: "Ed Sheeran", uri: "" },
+        { id: "4", title: "Rolling in the Deep", artist: "Adele", uri: "" },
+        { id: "5", title: "Wonderwall", artist: "Oasis", uri: "" }
     ];
 
     let allTracks = FAKE_TRACKS.slice();
@@ -248,6 +225,11 @@
     let spotifyUser = null;
     let spotifyPlaylists = [];
 
+    // Web Playback SDK
+    let spotifyPlayer = null;
+    let spotifyDeviceId = null;
+    let playerActivated = false;
+
     const progressEl = document.getElementById("progress");
     const trackAreaEl = document.getElementById("track-area");
     const showAnswerBtn = document.getElementById("show-answer");
@@ -255,20 +237,10 @@
     const koBtn = document.getElementById("btn-ko");
     const resetBtn = document.getElementById("btn-reset");
     const playlistNameEl = document.getElementById("playlist-name");
-    const audioPlayer = document.getElementById("audio-player");
 
     /********************
      * UTILS            *
      ********************/
-    function escapeHtml(str) {
-        return str
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
     const generateRandomString = (length) => {
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const values = crypto.getRandomValues(new Uint8Array(length));
@@ -330,7 +302,6 @@
         remainingTracks = allTracks.slice();
         currentTrack = null;
         showAnswer = false;
-        stopAudio();
         pickRandomTrack();
         render();
     }
@@ -339,31 +310,44 @@
         if (remainingTracks.length === 0) {
             currentTrack = null;
             showAnswer = false;
-            stopAudio();
             render();
             return;
         }
         const index = Math.floor(Math.random() * remainingTracks.length);
         currentTrack = remainingTracks[index];
         showAnswer = false;
-        playPreviewForCurrentTrack();
+        playCurrentTrackInSpotify();
         render();
     }
 
-    function playPreviewForCurrentTrack() {
-        stopAudio();
-        if (currentTrack && currentTrack.previewUrl) {
-            audioPlayer.src = currentTrack.previewUrl;
-            audioPlayer.play().catch(() => {
-                // silencieux si autoplay bloqué
-            });
+    async function playCurrentTrackInSpotify() {
+        if (!accessToken || !spotifyDeviceId || !currentTrack || !currentTrack.uri) {
+            return;
         }
-    }
+        try {
+            // Nécessaire sur mobile : activer l’élément audio après une interaction utilisateur
+            if (spotifyPlayer && !playerActivated) {
+                try {
+                    await spotifyPlayer.activateElement();
+                    playerActivated = true;
+                } catch (e) {
+                    console.warn('activateElement a échoué (normal si pas encore d\'interaction utilisateur)', e);
+                }
+            }
 
-    function stopAudio() {
-        if (!audioPlayer) return;
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
+            await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uris: [currentTrack.uri]
+                })
+            });
+        } catch (e) {
+            console.error('Erreur lors de la lecture Spotify', e);
+        }
     }
 
     function render() {
@@ -491,16 +475,22 @@
                 spotifyUser = await meResp.json();
             }
 
-            // Playlists (première page)
-            const plResp = await fetch('https://api.spotify.com/v1/me/playlists?limit=20', {
-                headers: { Authorization: 'Bearer ' + accessToken }
-            });
-            if (plResp.ok) {
+            // Playlists (on récupère TOUT via pagination)
+            let url = 'https://api.spotify.com/v1/me/playlists?limit=50';
+            let allItems = [];
+            while (url) {
+                const plResp = await fetch(url, {
+                    headers: { Authorization: 'Bearer ' + accessToken }
+                });
+                if (!plResp.ok) {
+                    console.error('Erreur playlists', plResp.status);
+                    break;
+                }
                 const data = await plResp.json();
-                spotifyPlaylists = data.items || [];
-            } else {
-                console.error('Erreur playlists', plResp.status);
+                allItems = allItems.concat(data.items || []);
+                url = data.next; // URL complète de la page suivante ou null
             }
+            spotifyPlaylists = allItems;
         } catch (e) {
             console.error('Erreur fetch Spotify', e);
         }
@@ -509,39 +499,45 @@
     }
 
     async function loadPlaylistTracks(playlistId, playlistName) {
-    if (!accessToken) return;
-    try {
-        const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
-        const resp = await fetch(url, {
-            headers: { Authorization: 'Bearer ' + accessToken }
-        });
-        if (!resp.ok) {
-            console.error('Erreur tracks', resp.status);
-            alert("Erreur lors du chargement des morceaux.");
-            return;
-        }
-        const data = await resp.json();
-        const tracks = (data.items || [])
-            .map(item => item.track)
-            .filter(track => track && track.id && track.name && track.artists && track.artists.length > 0) // on garde les vrais morceaux
-            .map(track => ({
-                id: track.id,
-                title: track.name,
-                artist: track.artists[0].name,
-                previewUrl: track.preview_url || null   // souvent null, mais ce n’est plus bloquant
-            }));
+        if (!accessToken) return;
+        try {
+            let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+            let items = [];
+            while (url) {
+                const resp = await fetch(url, {
+                    headers: { Authorization: 'Bearer ' + accessToken }
+                });
+                if (!resp.ok) {
+                    console.error('Erreur tracks', resp.status);
+                    alert("Erreur lors du chargement des morceaux.");
+                    return;
+                }
+                const data = await resp.json();
+                items = items.concat(data.items || []);
+                url = data.next; // page suivante ou null
+            }
 
-        if (!tracks.length) {
-            alert("Cette playlist ne contient pas de morceaux exploitables (pistes vides ou non musicales).");
-            return;
-        }
+            const tracks = items
+                .map(item => item.track)
+                .filter(track => track && track.id && track.name && track.artists && track.artists.length > 0)
+                .map(track => ({
+                    id: track.id,
+                    title: track.name,
+                    artist: track.artists[0].name,
+                    uri: track.uri
+                }));
 
-        initGame(tracks, `Playlist : ${playlistName}`);
-    } catch (e) {
-        console.error('Erreur playlist tracks', e);
-        alert("Erreur lors du chargement de la playlist Spotify.");
+            if (!tracks.length) {
+                alert("Cette playlist ne contient pas de morceaux exploitables.");
+                return;
+            }
+
+            initGame(tracks, `Playlist : ${playlistName}`);
+        } catch (e) {
+            console.error('Erreur playlist tracks', e);
+            alert("Erreur lors du chargement de la playlist Spotify.");
+        }
     }
-}
 
     function renderSpotifyArea() {
         const statusEl = document.getElementById('spotify-status');
@@ -562,7 +558,14 @@
             ? (spotifyUser.display_name || spotifyUser.id)
             : 'Utilisateur Spotify';
 
-        statusEl.textContent = `Connecté à Spotify en tant que ${userName}`;
+        let deviceInfo = '';
+        if (spotifyDeviceId) {
+            deviceInfo = ' • Player prêt';
+        } else {
+            deviceInfo = ' • Initialisation du player en cours…';
+        }
+
+        statusEl.textContent = `Connecté à Spotify en tant que ${userName}${deviceInfo}`;
 
         if (!spotifyPlaylists || spotifyPlaylists.length === 0) {
             actionsEl.textContent = "Aucune playlist trouvée (ou chargement en cours).";
@@ -598,13 +601,68 @@
     }
 
     /********************
+     * WEB PLAYBACK SDK *
+     ********************/
+    function initSpotifyPlayer() {
+        if (!accessToken) return;
+        if (!window.Spotify) {
+            console.warn('SDK Spotify non chargé encore.');
+            return;
+        }
+        if (spotifyPlayer) return;
+
+        spotifyPlayer = new Spotify.Player({
+            name: 'BlindTrainer Player',
+            getOAuthToken: cb => { cb(accessToken); },
+            volume: 0.5
+        });
+
+        spotifyPlayer.addListener('ready', ({ device_id }) => {
+            console.log('Web Playback ready with Device ID', device_id);
+            spotifyDeviceId = device_id;
+            renderSpotifyArea();
+        });
+
+        spotifyPlayer.addListener('not_ready', ({ device_id }) => {
+            console.log('Device ID has gone offline', device_id);
+            if (spotifyDeviceId === device_id) {
+                spotifyDeviceId = null;
+                renderSpotifyArea();
+            }
+        });
+
+        spotifyPlayer.addListener('initialization_error', ({ message }) => {
+            console.error('init error', message);
+        });
+        spotifyPlayer.addListener('authentication_error', ({ message }) => {
+            console.error('auth error', message);
+        });
+        spotifyPlayer.addListener('account_error', ({ message }) => {
+            console.error('account error', message);
+        });
+        spotifyPlayer.addListener('playback_error', ({ message }) => {
+            console.error('playback error', message);
+        });
+
+        spotifyPlayer.connect();
+    }
+
+    // Appelé automatiquement quand le SDK est prêt
+    window.onSpotifyWebPlaybackSDKReady = () => {
+        console.log('Spotify Web Playback SDK ready.');
+        if (accessToken) {
+            initSpotifyPlayer();
+        }
+    };
+
+    /********************
      * BOOTSTRAP        *
      ********************/
     (async function bootstrap() {
-        // 1) Regarder si on a déjà un token valable
+        // 1) Token stocké ?
         loadTokenFromStorage();
 
-        // 2) Regarder si on revient de Spotify avec ?code=...
+        // 2) Retour d'OAuth ?
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (!accessToken && code) {
@@ -612,17 +670,18 @@
             cleanUrlParams();
         }
 
-        // Recharger le token (au cas où on vient de l’obtenir)
+        // 3) Recharger token au besoin
         loadTokenFromStorage();
 
-        // 3) Si token, on va chercher user + playlists
+        // 4) Si token, récupérer user + playlists et init player
         if (accessToken) {
             await fetchSpotifyUserAndPlaylists();
+            initSpotifyPlayer();
         } else {
             renderSpotifyArea();
         }
 
-        // 4) Initialiser le jeu avec les fake tracks (en attendant qu’une playlist soit choisie)
+        // 5) Initialiser le jeu (fake en attendant qu'une playlist soit chargée)
         initGame(allTracks, currentPlaylistName);
     })();
 </script>
