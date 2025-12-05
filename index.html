@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Blind Test – Entraînement</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #111827;
+            color: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 480px;
+            padding: 24px 16px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin: 0 0 8px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .progress {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .track-label {
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 1rem;
+            color: #9ca3af;
+        }
+
+        .hidden-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .buttons-main,
+        .buttons-bottom {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .btn-ok {
+            background: #22c55e;
+            color: #022c22;
+        }
+
+        .btn-ko {
+            background: #f97316;
+            color: #111827;
+        }
+
+        .btn-secondary {
+            background: #374151;
+            color: #e5e7eb;
+        }
+
+        .done-message {
+            font-size: 1.1rem;
+            margin: 8px 0;
+        }
+
+        .emoji {
+            font-size: 1.6rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <h1>Blind Test – Entraînement</h1>
+    <div class="subtitle">
+        Mode entraînement sur une playlist fictive
+    </div>
+
+    <div class="card">
+        <div id="progress" class="progress"></div>
+
+        <div id="track-area">
+            <!-- contenu dynamique -->
+        </div>
+
+        <div class="buttons-main">
+            <button id="show-answer" class="btn-primary">Afficher la réponse</button>
+        </div>
+    </div>
+
+    <div class="buttons-bottom">
+        <button id="btn-ok" class="btn-ok">OK (je connaissais)</button>
+        <button id="btn-ko" class="btn-ko">KO (je ne connaissais pas)</button>
+        <button id="btn-reset" class="btn-secondary">Réinitialiser</button>
+    </div>
+</div>
+
+<script>
+    // --- Données de départ : playlist "fake" ---
+    const allTracks = [
+        { id: "1", title: "Billie Jean", artist: "Michael Jackson" },
+        { id: "2", title: "Smells Like Teen Spirit", artist: "Nirvana" },
+        { id: "3", title: "Shape of You", artist: "Ed Sheeran" },
+        { id: "4", title: "Rolling in the Deep", artist: "Adele" },
+        { id: "5", title: "Wonderwall", artist: "Oasis" }
+    ];
+
+    let remainingTracks = [];
+    let currentTrack = null;
+    let showAnswer = false;
+
+    const progressEl = document.getElementById("progress");
+    const trackAreaEl = document.getElementById("track-area");
+    const showAnswerBtn = document.getElementById("show-answer");
+    const okBtn = document.getElementById("btn-ok");
+    const koBtn = document.getElementById("btn-ko");
+    const resetBtn = document.getElementById("btn-reset");
+
+    function init() {
+        // Copie la playlist initiale dans remainingTracks
+        remainingTracks = allTracks.slice();
+        currentTrack = null;
+        showAnswer = false;
+        pickRandomTrack();
+        render();
+    }
+
+    function pickRandomTrack() {
+        if (remainingTracks.length === 0) {
+            currentTrack = null;
+            showAnswer = false;
+            render();
+            return;
+        }
+        const index = Math.floor(Math.random() * remainingTracks.length);
+        currentTrack = remainingTracks[index];
+        showAnswer = false;
+        render();
+    }
+
+    function render() {
+        // Affiche la progression
+        progressEl.textContent = `Restants : ${remainingTracks.length} / ${allTracks.length}`;
+
+        // Plus aucun morceau ?
+        if (remainingTracks.length === 0) {
+            trackAreaEl.innerHTML = `
+                <div class="emoji">🎉</div>
+                <div class="done-message">Tu connais toute la playlist !</div>
+            `;
+            showAnswerBtn.disabled = true;
+            okBtn.disabled = true;
+            koBtn.disabled = true;
+            return;
+        }
+
+        // Il reste des morceaux
+        showAnswerBtn.disabled = showAnswer;
+        okBtn.disabled = false;
+        koBtn.disabled = false;
+
+        if (!showAnswer || !currentTrack) {
+            trackAreaEl.innerHTML = `
+                <div class="track-label">Écoute la musique…</div>
+                <div class="hidden-title">Titre caché</div>
+                <div class="track-artist">Artiste caché</div>
+            `;
+        } else {
+            trackAreaEl.innerHTML = `
+                <div class="track-label">Réponse :</div>
+                <div class="track-title">${currentTrack.title}</div>
+                <div class="track-artist">par ${currentTrack.artist}</div>
+            `;
+        }
+    }
+
+    // --- Événements boutons ---
+    showAnswerBtn.addEventListener("click", () => {
+        if (!showAnswer && remainingTracks.length > 0) {
+            showAnswer = true;
+            render();
+        }
+    });
+
+    okBtn.addEventListener("click", () => {
+        if (!currentTrack) return;
+        // L'utilisateur connaissait → on retire le morceau de la liste
+        remainingTracks = remainingTracks.filter(t => t.id !== currentTrack.id);
+        pickRandomTrack();
+    });
+
+    koBtn.addEventListener("click", () => {
+        if (!currentTrack) return;
+        // L'utilisateur ne connaissait pas → on garde ce morceau dans remainingTracks
+        pickRandomTrack();
+    });
+
+    resetBtn.addEventListener("click", () => {
+        init();
+    });
+
+    // Initialisation
+    init();
+</script>
+</body>
+</html>
