@@ -149,6 +149,9 @@
             text-align: center;
             margin-top: 4px;
         }
+		#buttons-bottom {
+			display: none; /* caché par défaut */
+		}
     </style>
 </head>
 <body>
@@ -182,11 +185,11 @@
         </div>
     </div>
 
-    <div class="buttons-bottom">
-        <button id="btn-ok" class="btn-ok">OK (je connaissais)</button>
-        <button id="btn-ko" class="btn-ko">KO (je ne connaissais pas)</button>
-        <button id="btn-reset" class="btn-secondary">Réinitialiser</button>
-    </div>
+	<div id="buttons-bottom" class="buttons-bottom">
+		<button id="btn-ok" class="btn-ok">OK (je connaissais)</button>
+		<button id="btn-ko" class="btn-ko">KO (je ne connaissais pas)</button>
+		<button id="btn-reset" class="btn-secondary">Réinitialiser</button>
+	</div>
 </div>
 
 <!-- SDK Spotify -->
@@ -237,6 +240,8 @@
     const koBtn = document.getElementById("btn-ko");
     const resetBtn = document.getElementById("btn-reset");
     const playlistNameEl = document.getElementById("playlist-name");
+	const buttonsBottomEl = document.getElementById("buttons-bottom");
+
 
     /********************
      * UTILS            *
@@ -321,38 +326,60 @@
     }
 
     async function playCurrentTrackInSpotify() {
-        if (!accessToken || !spotifyDeviceId || !currentTrack || !currentTrack.uri) {
-            return;
-        }
-        try {
-            // Nécessaire sur mobile : activer l’élément audio après une interaction utilisateur
-            if (spotifyPlayer && !playerActivated) {
-                try {
-                    await spotifyPlayer.activateElement();
-                    playerActivated = true;
-                } catch (e) {
-                    console.warn('activateElement a échoué (normal si pas encore d\'interaction utilisateur)', e);
-                }
-            }
-
-            await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': 'Bearer ' + accessToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    uris: [currentTrack.uri]
-                })
-            });
-        } catch (e) {
-            console.error('Erreur lors de la lecture Spotify', e);
-        }
+    if (!accessToken || !spotifyDeviceId || !currentTrack || !currentTrack.uri) {
+        return;
     }
+
+    try {
+        // Sur mobile, il faut souvent "activer" l'élément audio
+        if (spotifyPlayer && !playerActivated) {
+            try {
+                await spotifyPlayer.activateElement();
+                playerActivated = true;
+            } catch (e) {
+                console.warn('activateElement a échoué (souvent normal la première fois)', e);
+            }
+        }
+
+        // 1) On transfère la lecture vers notre device (le met "actif")
+        await fetch('https://api.spotify.com/v1/me/player', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                device_ids: [spotifyDeviceId],
+                play: false
+            })
+        });
+
+        // 2) On joue le titre demandé sur ce device
+        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uris: [currentTrack.uri]
+            })
+        });
+    } catch (e) {
+        console.error('Erreur lors de la lecture Spotify', e);
+    }
+}
+
 
     function render() {
         playlistNameEl.textContent = currentPlaylistName;
         progressEl.textContent = `Restants : ${remainingTracks.length} / ${allTracks.length}`;
+		// Affichage des boutons OK/KO uniquement après avoir montré la réponse
+		if (showAnswer && remainingTracks.length > 0) {
+			buttonsBottomEl.style.display = 'flex';
+		} else {
+			buttonsBottomEl.style.display = 'none';
+		}
 
         if (remainingTracks.length === 0) {
             trackAreaEl.innerHTML = `
