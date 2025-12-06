@@ -12,39 +12,21 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
             background: #111827;
             color: #e5e7eb;
             font-family: system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
         }
 
+        /* Conteneur principal centré, scroll vertical normal */
         .app {
-            flex: 1;
+            min-height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 10px 12px 16px;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            padding: 10px 12px 70px; /* espace réservé pour bouton bas */
-            box-sizing: border-box;
         }
-		
-		/* Le footer fixé doit rester au-dessus */
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    padding: 12px;
-    background: #111827;
-    z-index: 999; /* reste au-dessus */
-}
-
-.footer button {
-    padding: 10px 26px;
-    font-size: 1.1rem;
-    border-radius: 12px;
-}
 
         h1 {
             margin: 0 0 10px;
@@ -53,7 +35,6 @@
         }
 
         /* --- PANEL PLAYLIST --- */
-
         .card {
             background: #1f2937;
             border-radius: 12px;
@@ -61,49 +42,59 @@
             margin-bottom: 12px;
         }
 
-   .playlist-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+        .playlist-row {
+            display: flex;
+            flex-wrap: wrap;  /* par défaut: mobile -> colonne */
+            gap: 8px;
+        }
 
-/* Le select occupe tout l’espace restant, sans débordement */
-.playlist-row select {
-    flex: 1 1 auto;
-    min-width: 0;          /* permet de rétrécir correctement */
-    padding: 10px;
-    border-radius: 999px;
-    border: 1px solid #374151;
-    font-size: 1rem;
-    background: #111827;
-    color: #e5e7eb;
-}
+        /* Select prend toute la largeur dispo */
+        .playlist-row select {
+            flex: 1 1 100%;
+            min-width: 0;
+            padding: 10px;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            font-size: 1rem;
+            background: #111827;
+            color: #e5e7eb;
+        }
 
-/* Bouton de chargement – petit carré fixe */
-.btn-icon {
-    flex: 0 0 48px;        /* largeur/hauteur fixes */
-    height: 48px;
-    border-radius: 12px;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #3b82f6;
-    color: white;
-    border: none;
-}
+        /* Bouton de chargement – petit carré */
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            align-self: flex-end; /* mobile: à droite sous le select */
+        }
 
-
-
+        /* Sur écran plus large: select + bouton sur la même ligne */
+        @media (min-width: 500px) {
+            .playlist-row {
+                flex-wrap: nowrap;
+            }
+            .playlist-row select {
+                flex: 1 1 auto;
+            }
+            .btn-icon {
+                align-self: center;
+            }
+        }
 
         /* --- PANEL BLIND TEST --- */
-
         .blind-card {
             background: #1f2937;
             border-radius: 14px;
             padding: 16px;
+            margin-top: 4px;
             flex: 1 1 auto;
-            min-height: 45vh;
             display: flex;
             flex-direction: column;
         }
@@ -148,7 +139,6 @@
         }
 
         /* --- BUTTONS --- */
-
         .buttons-main {
             display: flex;
             flex-direction: column;
@@ -165,17 +155,12 @@
         }
 
         .btn-primary { background: #3b82f6; color: white; }
-        .btn-ok { background: #22c55e; color: #022c22; }
-        .btn-ko { background: #f97316; color: #111; }
+        .btn-ok      { background: #22c55e; color: #022c22; }
+        .btn-ko      { background: #f97316; color: #111; }
 
-        /* --- FOOTER RESET BUTTON --- */
-
+        /* --- FOOTER RESET (non fixe, sous la carte) --- */
         .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #111827;
-            padding: 10px;
+            margin-top: 16px;
             display: flex;
             justify-content: center;
         }
@@ -193,7 +178,6 @@
 <body>
 
 <div class="app">
-
     <h1>BlindTrainer</h1>
 
     <!-- PANEL PLAYLIST -->
@@ -207,10 +191,8 @@
 
     <!-- PANEL BLIND TEST -->
     <div class="blind-card">
-
         <div class="top-line">
             <div id="progress"></div>
-
             <!-- BOUTON PLAY/PAUSE -->
             <button id="btn-play-toggle" class="play-toggle">⏸</button>
         </div>
@@ -222,13 +204,12 @@
             <button id="btn-ok" class="btn-big btn-ok" style="display:none;">OK</button>
             <button id="btn-ko" class="btn-big btn-ko" style="display:none;">KO</button>
         </div>
-
     </div>
-</div>
 
-<!-- FOOTER RESET -->
-<div class="footer">
-    <button id="btn-reset">Réinitialiser</button>
+    <!-- FOOTER RESET -->
+    <div class="footer">
+        <button id="btn-reset">Réinitialiser</button>
+    </div>
 </div>
 
 <!-- SDK SPOTIFY -->
@@ -626,7 +607,7 @@ function renderSpotifyArea() {
 
     const btn = document.createElement("button");
     btn.className = "btn-icon";
-    btn.textContent = "▶"; // plus explicite que ⟳
+    btn.textContent = "▶";
     btn.title = "Charger la playlist";
     btn.onclick = () => {
         const opt = select.options[select.selectedIndex];
