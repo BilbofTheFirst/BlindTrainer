@@ -61,10 +61,10 @@
             margin-bottom: 12px;
         }
 
-       .playlist-row {
+     /* Ligne playlist : desktop = côte à côte, mobile = colonne */
+.playlist-row {
     display: flex;
     gap: 10px;
-    flex-wrap: nowrap; /* aligné sur la même ligne */
     align-items: center;
 }
 
@@ -78,12 +78,13 @@
     font-size: 1rem;
     background: #111827;
     color: #e5e7eb;
+	width:80%
 }
 
-/* Bouton de chargement – reste petit même en mobile */
+/* Bouton de chargement – petit carré */
 .btn-icon {
-    width: 48px !important;
-    height: 48px !important;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     font-size: 1.4rem;
     display: flex;
@@ -92,19 +93,21 @@
     background: #3b82f6;
     color: white;
     border: none;
-    flex-shrink: 0; /* ne rétrécit pas */
+    flex-shrink: 0;
 }
 
-/* Sur mobile : ne pas passer en colonne */
+/* Sur mobile : le bouton passe en dessous, petit, aligné à droite */
 @media (max-width: 480px) {
     .playlist-row {
-        flex-wrap: nowrap;
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .playlist-row select {
-        flex: 1;
+    .playlist-row .btn-icon {
+        align-self: flex-end;  /* petit bouton à droite sous la liste */
     }
 }
+
 
 
         /* --- PANEL BLIND TEST --- */
