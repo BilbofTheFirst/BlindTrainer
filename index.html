@@ -36,44 +36,48 @@
 
         /* --- PANEL PLAYLIST --- */
         .card {
-            background: #1f2937;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
+    background: #1f2937;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
 
-        .playlist-row {
-            display: flex;
-            flex-wrap: wrap;  /* par défaut: mobile -> colonne */
-            gap: 8px;
-        }
+/* Ligne playlist : toujours une seule ligne, même sur mobile */
+.playlist-row {
+    display: flex;
+    flex-wrap: nowrap;        /* IMPORTANT : jamais de retour à la ligne */
+    align-items: center;
+    gap: 8px;
+}
 
-        /* Select prend toute la largeur dispo */
-        .playlist-row select {
-            flex: 1 1 100%;
-            min-width: 0;
-            padding: 10px;
-            border-radius: 999px;
-            border: 1px solid #374151;
-            font-size: 1rem;
-            background: #111827;
-            color: #e5e7eb;
-        }
+/* Le select se compresse et met ... si trop long */
+.playlist-row select {
+    flex: 1 1 auto;
+    min-width: 0;             /* permet de rétrécir correctement */
+    padding: 10px;
+    border-radius: 999px;
+    border: 1px solid #374151;
+    font-size: 1rem;
+    background: #111827;
+    color: #e5e7eb;
+    white-space: nowrap;      /* une seule ligne */
+    overflow: hidden;         /* cache le surplus */
+    text-overflow: ellipsis;  /* ajoute "..." à la fin */
+}
 
-        /* Bouton de chargement – petit carré */
-        .btn-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            align-self: flex-end; /* mobile: à droite sous le select */
-        }
+/* Bouton de chargement – petit carré fixe à droite */
+.btn-icon {
+    flex: 0 0 48px;           /* largeur fixe */
+    height: 48px;
+    border-radius: 12px;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #3b82f6;
+    color: white;
+    border: none;
+}
 
         /* Sur écran plus large: select + bouton sur la même ligne */
         @media (min-width: 500px) {
