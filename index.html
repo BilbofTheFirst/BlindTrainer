@@ -9,175 +9,187 @@
     <link rel="apple-touch-icon" href="icon-192.png" />
     <meta name="theme-color" content="#111827">
 
-    <style>
-        body {
-            margin: 0;
-            background: #111827;
-            color: #e5e7eb;
-            font-family: system-ui, sans-serif;
-        }
+   <style>
+    /* Tout en box-sizing: border-box pour éviter les débordements */
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
 
-        /* Conteneur principal centré, scroll vertical normal */
-        .app {
-            min-height: 100vh;
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 10px 12px 16px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        max-width: 100%;
+        overflow-x: hidden;              /* PLUS AUCUN SCROLL HORIZONTAL */
+        background: #111827;
+        color: #e5e7eb;
+        font-family: system-ui, sans-serif;
+    }
 
-        h1 {
-            margin: 0 0 10px;
-            text-align: center;
-            font-size: 1.4rem;
-        }
+    body {
+        display: flex;
+        flex-direction: column;
+    }
 
-        /* --- PANEL PLAYLIST --- */
-        .card {
-    background: #1f2937;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
+    .app {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px 12px 70px;         /* espace réservé pour le bouton bas */
+        box-sizing: border-box;
+    }
 
-/* Ligne playlist : toujours une seule ligne, même sur mobile */
-.playlist-row {
-    display: flex;
-    flex-wrap: nowrap;        /* IMPORTANT : jamais de retour à la ligne */
-    align-items: center;
-    gap: 8px;
-}
+    h1 {
+        margin: 0 0 10px;
+        text-align: center;
+        font-size: 1.4rem;
+    }
 
-/* Le select se compresse et met ... si trop long */
-.playlist-row select {
-    flex: 1 1 auto;
-    min-width: 0;             /* permet de rétrécir correctement */
-    padding: 10px;
-    border-radius: 999px;
-    border: 1px solid #374151;
-    font-size: 1rem;
-    background: #111827;
-    color: #e5e7eb;
-    white-space: nowrap;      /* une seule ligne */
-    overflow: hidden;         /* cache le surplus */
-    text-overflow: ellipsis;  /* ajoute "..." à la fin */
-}
+    /* --- PANELS GÉNÉRAUX --- */
 
-/* Bouton de chargement – petit carré fixe à droite */
-.btn-icon {
-    flex: 0 0 48px;           /* largeur fixe */
-    height: 48px;
-    border-radius: 12px;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #3b82f6;
-    color: white;
-    border: none;
-}
+    .card,
+    .blind-card {
+        background: #1f2937;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        max-width: 100%;                 /* ne dépasse jamais l’écran */
+    }
 
-        /* Sur écran plus large: select + bouton sur la même ligne */
-        @media (min-width: 500px) {
-            .playlist-row {
-                flex-wrap: nowrap;
-            }
-            .playlist-row select {
-                flex: 1 1 auto;
-            }
-            .btn-icon {
-                align-self: center;
-            }
-        }
+    /* --- PANEL PLAYLIST --- */
 
-        /* --- PANEL BLIND TEST --- */
-        .blind-card {
-            background: #1f2937;
-            border-radius: 14px;
-            padding: 16px;
-            margin-top: 4px;
-            flex: 1 1 auto;
-            display: flex;
-            flex-direction: column;
-        }
+    .playlist-row {
+        display: grid;                   /* 2 colonnes : select + bouton */
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: 8px;
+        align-items: center;
+        width: 100%;
+    }
 
-        .top-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+    /* Le select prend toute la 1ère colonne et se compresse si besoin */
+    .playlist-row select {
+        width: 100%;
+        min-width: 0;                    /* IMPORTANT pour permettre la compression */
+        padding: 10px;
+        border-radius: 999px;
+        border: 1px solid #374151;
+        font-size: 1rem;
+        background: #111827;
+        color: #e5e7eb;
+        white-space: nowrap;             /* une seule ligne */
+        overflow: hidden;
+        text-overflow: ellipsis;         /* ... si trop long */
+    }
 
-        .play-toggle {
-            font-size: 1.6rem;
-            background: none;
-            border: none;
-            color: #e5e7eb;
-            padding: 6px;
-        }
+    /* Bouton de chargement – petit carré fixe à droite */
+    .btn-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #3b82f6;
+        color: white;
+        border: none;
+    }
 
-        .track-panel {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            text-align: center;
-        }
+    /* --- PANEL BLIND TEST --- */
 
-        .hidden-title {
-            font-size: 2rem;
-            color: #6b7280;
-            margin-top: 8px;
-        }
+    .blind-card {
+        border-radius: 14px;
+        padding: 16px;
+        flex: 1 1 auto;
+        min-height: 45vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        .track-title {
-            font-size: 2rem;
-            font-weight: 600;
-        }
+    .top-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
 
-        .track-artist {
-            font-size: 1.2rem;
-            color: #9ca3af;
-        }
+    .play-toggle {
+        font-size: 1.6rem;
+        background: none;
+        border: none;
+        color: #e5e7eb;
+        padding: 6px;
+    }
 
-        /* --- BUTTONS --- */
-        .buttons-main {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-top: 10px;
-        }
+    .track-panel {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+    }
 
-        .btn-big {
-            padding: 18px;
-            border-radius: 14px;
-            font-size: 1.4rem;
-            width: 100%;
-            border: none;
-        }
+    .hidden-title {
+        font-size: 2rem;
+        color: #6b7280;
+        margin-top: 8px;
+    }
 
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-ok      { background: #22c55e; color: #022c22; }
-        .btn-ko      { background: #f97316; color: #111; }
+    .track-title {
+        font-size: 2rem;
+        font-weight: 600;
+    }
 
-        /* --- FOOTER RESET (non fixe, sous la carte) --- */
-        .footer {
-            margin-top: 16px;
-            display: flex;
-            justify-content: center;
-        }
+    .track-artist {
+        font-size: 1.2rem;
+        color: #9ca3af;
+    }
 
-        .footer button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 12px;
-            border: none;
-            background: #374151;
-            color: #e5e7eb;
-        }
-    </style>
+    /* --- BUTTONS --- */
+
+    .buttons-main {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 10px;
+    }
+
+    .btn-big {
+        padding: 18px;
+        border-radius: 14px;
+        font-size: 1.4rem;
+        width: 100%;
+        border: none;
+    }
+
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-ok      { background: #22c55e; color: #022c22; }
+    .btn-ko      { background: #f97316; color: #111; }
+
+    /* --- FOOTER RESET BUTTON --- */
+
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111827;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .footer button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 12px;
+        border: none;
+        background: #374151;
+        color: #e5e7eb;
+    }
+</style>
+
 </head>
 <body>
 
