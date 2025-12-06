@@ -2,204 +2,213 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Blind Test – Entraînement</title>
+    <title>BlindTrainer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Icône (ajoute un fichier icon-192.png dans le repo si tu veux un vrai visuel) -->
+
     <link rel="icon" href="icon-192.png" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <meta name="theme-color" content="#111827" />
+    <meta name="theme-color" content="#111827">
+
     <style>
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             margin: 0;
             padding: 0;
             background: #111827;
             color: #e5e7eb;
+            font-family: system-ui, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: stretch;
-            min-height: 100vh;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
+
         .app {
-            width: 100%;
-            max-width: 480px;
-            padding: 20px 14px 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 12px 70px; /* espace réservé pour bouton bas */
             box-sizing: border-box;
         }
+
         h1 {
-            font-size: 1.4rem;
             margin: 0 0 10px;
             text-align: center;
+            font-size: 1.4rem;
         }
-        .subtitle {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #9ca3af;
-            margin-bottom: 14px;
-        }
+
+        /* --- PANEL PLAYLIST --- */
+
         .card {
             background: #1f2937;
-            border-radius: 14px;
-            padding: 12px 14px;
-            margin-bottom: 14px;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
         }
-        .card-spotify {
-            margin-bottom: 16px;
-        }
-        .spotify-status {
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-        }
-        .spotify-actions {
+
+        .playlist-row {
             display: flex;
-            justify-content: center;
+            gap: 10px;
         }
-        .spotify-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-        }
-        .spotify-row select {
+
+        select {
             flex: 1;
-            background: #111827;
-            color: #e5e7eb;
+            padding: 10px;
             border-radius: 999px;
             border: 1px solid #374151;
-            padding: 8px 10px;
-            font-size: 0.85rem;
-            max-width: 100%;
-        }
-
-        button {
-            border: none;
-            border-radius: 999px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .btn-primary {
-            background: #3b82f6;
-            color: #ffffff;
-        }
-        .btn-secondary {
-            background: #374151;
+            font-size: 1rem;
+            background: #111827;
             color: #e5e7eb;
         }
-        .btn-ok {
-            background: #22c55e;
-            color: #022c22;
-        }
-        .btn-ko {
-            background: #f97316;
-            color: #111827;
-        }
-        .btn-small {
-            padding: 6px 10px;
-            font-size: 0.8rem;
-        }
+
         .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            font-size: 1.2rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #3b82f6;
+            color: white;
+            border: none;
         }
 
-        .track-label {
-            text-align: center;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+        /* --- PANEL BLIND TEST --- */
+
+        .blind-card {
+            background: #1f2937;
+            border-radius: 14px;
+            padding: 16px;
+            flex: 1 1 auto;
+            min-height: 45vh;
+            display: flex;
+            flex-direction: column;
         }
+
+        .top-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .play-toggle {
+            font-size: 1.6rem;
+            background: none;
+            border: none;
+            color: #e5e7eb;
+            padding: 6px;
+        }
+
+        .track-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
         .hidden-title {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 600;
+            font-size: 2rem;
             color: #6b7280;
-            margin-bottom: 4px;
+            margin-top: 8px;
         }
+
         .track-title {
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 4px;
+            font-size: 2rem;
+            font-weight: 600;
         }
+
         .track-artist {
-            text-align: center;
+            font-size: 1.2rem;
             color: #9ca3af;
-            font-size: 0.95rem;
         }
-        .progress {
-            font-size: 0.85rem;
-            color: #9ca3af;
-            margin-bottom: 8px;
-        }
+
+        /* --- BUTTONS --- */
 
         .buttons-main {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 18px;
-        }
-        .buttons-main button {
-            width: 100%;
-            font-size: 1.1rem;
-            padding: 14px 18px;
-        }
-        .buttons-bottom {
-            display: flex;
-            justify-content: center;
-            margin-top: 8px;
-        }
-        .buttons-bottom button {
-            padding: 8px 14px;
-            font-size: 0.85rem;
+            gap: 14px;
+            margin-top: 10px;
         }
 
-        .done-message {
-            font-size: 1.1rem;
-            margin-top: 6px;
-            text-align: center;
+        .btn-big {
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 1.4rem;
+            width: 100%;
+            border: none;
         }
-        .emoji {
-            font-size: 1.8rem;
-            text-align: center;
+
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-ok { background: #22c55e; color: #022c22; }
+        .btn-ko { background: #f97316; color: #111; }
+
+        /* --- FOOTER RESET BUTTON --- */
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #111827;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .footer button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 12px;
+            border: none;
+            background: #374151;
+            color: #e5e7eb;
         }
     </style>
 </head>
 <body>
+
 <div class="app">
-    <h1>Blind Test – Entraînement</h1>
-    <div class="subtitle">
-        Choisis une playlist Spotify et devine les titres (idéal en voiture) 🚗
-    </div>
 
-    <!-- Panel playlist -->
-    <div class="card card-spotify">
-        <div id="spotify-status" class="spotify-status"></div>
-        <div id="spotify-actions" class="spotify-actions"></div>
-    </div>
+    <h1>BlindTrainer</h1>
 
-    <!-- Panel blind test -->
+    <!-- PANEL PLAYLIST -->
     <div class="card">
-        <div id="progress" class="progress"></div>
-        <div id="track-area"></div>
+        <div id="spotify-status" style="margin-bottom:8px;font-size:0.9rem;"></div>
 
-        <div class="buttons-main">
-            <button id="show-answer" class="btn-primary">Afficher la réponse</button>
-            <button id="btn-ok" class="btn-ok">OK (je connaissais)</button>
-            <button id="btn-ko" class="btn-ko">KO (je ne connaissais pas)</button>
-            <button id="btn-play-toggle" class="btn-secondary">⏸ Pause</button>
+        <div class="playlist-row" id="spotify-actions">
+            <!-- select + bouton charger -->
         </div>
     </div>
 
-    <div class="buttons-bottom">
-        <button id="btn-reset" class="btn-secondary">Réinitialiser la playlist</button>
+    <!-- PANEL BLIND TEST -->
+    <div class="blind-card">
+
+        <div class="top-line">
+            <div id="progress"></div>
+
+            <!-- BOUTON PLAY/PAUSE -->
+            <button id="btn-play-toggle" class="play-toggle">⏸</button>
+        </div>
+
+        <div id="track-area" class="track-panel"></div>
+
+        <div class="buttons-main">
+            <button id="show-answer" class="btn-big btn-primary">Afficher la réponse</button>
+            <button id="btn-ok" class="btn-big btn-ok" style="display:none;">OK</button>
+            <button id="btn-ko" class="btn-big btn-ko" style="display:none;">KO</button>
+        </div>
+
     </div>
 </div>
 
-<!-- SDK Spotify -->
+<!-- FOOTER RESET -->
+<div class="footer">
+    <button id="btn-reset">Réinitialiser</button>
+</div>
+
+<!-- SDK SPOTIFY -->
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
 /* ------------------------------
@@ -236,21 +245,31 @@ let spotifyDeviceId = null;
 let isPlaying = false;
 
 /* ------------------------------
+   DOM ELEMENTS
+--------------------------------*/
+const trackArea   = document.getElementById("track-area");
+const progressEl  = document.getElementById("progress");
+const btnShow     = document.getElementById("show-answer");
+const btnOK       = document.getElementById("btn-ok");
+const btnKO       = document.getElementById("btn-ko");
+const btnPlayTgl  = document.getElementById("btn-play-toggle");
+const btnReset    = document.getElementById("btn-reset");
+
+/* ------------------------------
    UTILS
 --------------------------------*/
 function generateRandomString(length) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-                .map(x => chars[x % chars.length])
-                .join("");
+        .map(x => chars[x % chars.length]).join("");
 }
 
 async function sha256(str) {
     return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
 }
 
-function base64encode(buffer) {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+function base64encode(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf)))
         .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
@@ -269,40 +288,29 @@ function loadToken() {
 }
 
 /* ------------------------------
-   UI ELEMENTS
---------------------------------*/
-const trackArea = document.getElementById("track-area");
-const progressEl = document.getElementById("progress");
-const btnShow = document.getElementById("show-answer");
-const btnOK = document.getElementById("btn-ok");
-const btnKO = document.getElementById("btn-ko");
-const btnPlayToggle = document.getElementById("btn-play-toggle");
-const btnReset = document.getElementById("btn-reset");
-
-/* ------------------------------
    RENDER
 --------------------------------*/
 function updatePlayButton() {
     if (!allTracks.length) {
-        btnPlayToggle.style.display = "none";
+        btnPlayTgl.style.visibility = "hidden";
         return;
     }
-    btnPlayToggle.style.display = "block";
-    btnPlayToggle.textContent = isPlaying ? "⏸ Pause" : "▶️ Reprendre";
+    btnPlayTgl.style.visibility = "visible";
+    btnPlayTgl.textContent = isPlaying ? "⏸" : "▶️";
 }
 
 function render() {
     progressEl.textContent = `Restants : ${remainingTracks.length} / ${allTracks.length}`;
     updatePlayButton();
 
-    if (allTracks.length === 0) {
+    if (!allTracks.length) {
         trackArea.innerHTML = `
-            <div class="track-label">Aucune playlist chargée</div>
-            <div class="track-artist">Sélectionne une playlist en haut pour commencer.</div>
+            <div style="font-size:1.2rem;font-weight:600;">Aucune playlist chargée</div>
+            <div style="margin-top:4px;color:#9ca3af;">Sélectionne une playlist en haut.</div>
         `;
         btnShow.style.display = "none";
-        btnOK.style.display = "none";
-        btnKO.style.display = "none";
+        btnOK.style.display   = "none";
+        btnKO.style.display   = "none";
         return;
     }
 
@@ -310,19 +318,21 @@ function render() {
 
     if (!showAnswer) {
         btnShow.style.display = "block";
-        btnOK.style.display = "none";
-        btnKO.style.display = "none";
+        btnOK.style.display   = "none";
+        btnKO.style.display   = "none";
+
         trackArea.innerHTML = `
-            <div class="track-label">Écoute la musique…</div>
+            <div style="font-size:1rem;color:#9ca3af;">Écoute la musique…</div>
             <div class="hidden-title">Titre caché</div>
             <div class="track-artist">Artiste caché</div>
         `;
     } else {
         btnShow.style.display = "none";
-        btnOK.style.display = "block";
-        btnKO.style.display = "block";
+        btnOK.style.display   = "block";
+        btnKO.style.display   = "block";
+
         trackArea.innerHTML = `
-            <div class="track-label">Réponse :</div>
+            <div style="font-size:1rem;color:#9ca3af;">Réponse :</div>
             <div class="track-title">${currentTrack.title}</div>
             <div class="track-artist">${currentTrack.artist}</div>
         `;
@@ -338,24 +348,31 @@ function initGame(tracks, name) {
     remainingTracks = [...allTracks];
     showAnswer = false;
     isPlaying = false;
-    pickRandomTrack();
+    if (remainingTracks.length > 0) {
+        pickRandomTrack();
+    } else {
+        currentTrack = null;
+        render();
+    }
 }
 
 function pickRandomTrack() {
-    if (remainingTracks.length === 0) {
+    if (!remainingTracks.length) {
         isPlaying = false;
         updatePlayButton();
+        progressEl.textContent = `Restants : 0 / ${allTracks.length}`;
         trackArea.innerHTML = `
             <div class="emoji">🎉</div>
             <div class="done-message">Tu connais toute la playlist !</div>
         `;
         btnShow.style.display = "none";
-        btnOK.style.display = "none";
-        btnKO.style.display = "none";
-        progressEl.textContent = `Restants : 0 / ${allTracks.length}`;
+        btnOK.style.display   = "none";
+        btnKO.style.display   = "none";
         return;
     }
-    currentTrack = remainingTracks[Math.floor(Math.random() * remainingTracks.length)];
+
+    const idx = Math.floor(Math.random() * remainingTracks.length);
+    currentTrack = remainingTracks[idx];
     showAnswer = false;
     playCurrentTrack();
     render();
@@ -364,25 +381,32 @@ function pickRandomTrack() {
 /* ------------------------------
    SPOTIFY PLAYBACK
 --------------------------------*/
-async function playCurrentTrack() {
-    if (!spotifyDeviceId || !currentTrack) return;
-
+async function makeThisDeviceActive() {
+    if (!spotifyDeviceId || !accessToken) return;
     try {
-        // Rendre ce device actif
         await fetch("https://api.spotify.com/v1/me/player", {
             method: "PUT",
             headers: {
-                Authorization: "Bearer " + accessToken,
+                "Authorization": "Bearer " + accessToken,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false })
         });
+    } catch (e) {
+        console.error("Erreur activation device:", e);
+    }
+}
 
-        // Jouer ce morceau
+async function playCurrentTrack() {
+    if (!spotifyDeviceId || !currentTrack || !accessToken) return;
+
+    try {
+        await makeThisDeviceActive();
+
         await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
             method: "PUT",
             headers: {
-                Authorization: "Bearer " + accessToken,
+                "Authorization": "Bearer " + accessToken,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ uris: [currentTrack.uri] })
@@ -391,7 +415,7 @@ async function playCurrentTrack() {
         isPlaying = true;
         updatePlayButton();
     } catch (e) {
-        console.error("Erreur playback:", e);
+        console.error("Erreur lecture:", e);
     }
 }
 
@@ -402,13 +426,14 @@ async function togglePlayPause() {
         if (isPlaying) {
             await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${spotifyDeviceId}`, {
                 method: "PUT",
-                headers: { Authorization: "Bearer " + accessToken }
+                headers: { "Authorization": "Bearer " + accessToken }
             });
             isPlaying = false;
         } else {
+            await makeThisDeviceActive();
             await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
                 method: "PUT",
-                headers: { Authorization: "Bearer " + accessToken }
+                headers: { "Authorization": "Bearer " + accessToken }
             });
             isPlaying = true;
         }
@@ -422,7 +447,7 @@ async function togglePlayPause() {
    SPOTIFY AUTH
 --------------------------------*/
 async function loginSpotify() {
-    const verifier = generateRandomString(64);
+    const verifier  = generateRandomString(64);
     const challenge = base64encode(await sha256(verifier));
     localStorage.setItem("spotify_verifier", verifier);
 
@@ -441,6 +466,8 @@ async function loginSpotify() {
 
 async function exchangeToken(code) {
     const verifier = localStorage.getItem("spotify_verifier");
+    if (!verifier) return;
+
     const body = new URLSearchParams({
         client_id: clientId,
         grant_type: "authorization_code",
@@ -459,7 +486,7 @@ async function exchangeToken(code) {
     if (data.access_token) {
         saveToken(data.access_token, data.expires_in);
     } else {
-        console.error("Erreur token", data);
+        console.error("Erreur token:", data);
     }
 }
 
@@ -467,28 +494,24 @@ async function exchangeToken(code) {
    CHARGEMENT PLAYLISTS / TRACKS
 --------------------------------*/
 async function loadPlaylists() {
-    const out = [];
+    const res = [];
     let url = "https://api.spotify.com/v1/me/playlists?limit=50";
 
     while (url) {
-        const r = await fetch(url, {
-            headers: { Authorization: "Bearer " + accessToken }
-        });
+        const r = await fetch(url, { headers: { "Authorization": "Bearer " + accessToken } });
         const j = await r.json();
-        out.push(...(j.items || []));
+        res.push(...(j.items || []));
         url = j.next;
     }
-    return out;
+    return res;
 }
 
-async function loadTracks(playlistId, playlistName) {
+async function loadTracks(playlistId, playlistLabel) {
     let items = [];
     let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
 
     while (url) {
-        const r = await fetch(url, {
-            headers: { Authorization: "Bearer " + accessToken }
-        });
+        const r = await fetch(url, { headers: { "Authorization": "Bearer " + accessToken } });
         const j = await r.json();
         items.push(...(j.items || []));
         url = j.next;
@@ -496,7 +519,7 @@ async function loadTracks(playlistId, playlistName) {
 
     const tracks = items
         .map(x => x.track)
-        .filter(x => x && x.id && x.artists && x.artists.length)
+        .filter(x => x && x.id && x.artists?.length)
         .map(x => ({
             id: x.id,
             uri: x.uri,
@@ -504,7 +527,7 @@ async function loadTracks(playlistId, playlistName) {
             artist: x.artists[0].name
         }));
 
-    initGame(tracks, playlistName);
+    initGame(tracks, playlistLabel);
     render();
 }
 
@@ -541,7 +564,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
    UI SPOTIFY PANEL
 --------------------------------*/
 function renderSpotifyArea() {
-    const status = document.getElementById("spotify-status");
+    const status  = document.getElementById("spotify-status");
     const actions = document.getElementById("spotify-actions");
     actions.innerHTML = "";
 
@@ -549,7 +572,8 @@ function renderSpotifyArea() {
         status.textContent = "Non connecté à Spotify";
         const b = document.createElement("button");
         b.textContent = "Connexion Spotify";
-        b.className = "btn-primary btn-small";
+        b.className = "btn-big btn-primary";
+        b.style.fontSize = "1rem";
         b.onclick = loginSpotify;
         actions.appendChild(b);
         return;
@@ -561,25 +585,26 @@ function renderSpotifyArea() {
             ? `Connecté en tant que ${userName} • Player prêt`
             : `Connecté en tant que ${userName} • Initialisation du player…`;
 
-    if (!spotifyPlaylists || spotifyPlaylists.length === 0) {
+    if (!spotifyPlaylists || !spotifyPlaylists.length) {
         actions.textContent = "Chargement des playlists…";
         return;
     }
 
     const row = document.createElement("div");
-    row.className = "spotify-row";
+    row.className = "playlist-row";
 
     const select = document.createElement("select");
     spotifyPlaylists.forEach(p => {
-        const o = document.createElement("option");
-        o.value = p.id;
-        o.textContent = `${p.name} (${p.tracks.total})`;
-        select.appendChild(o);
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.tracks.total})`;
+        select.appendChild(opt);
     });
 
     const btn = document.createElement("button");
-    btn.className = "btn-secondary btn-small btn-icon";
-    btn.textContent = "⟳"; // icône "recharger/charger"
+    btn.className = "btn-icon";
+    btn.textContent = "▶"; // plus explicite que ⟳
+    btn.title = "Charger la playlist";
     btn.onclick = () => {
         const opt = select.options[select.selectedIndex];
         loadTracks(opt.value, opt.text);
@@ -606,10 +631,10 @@ function renderSpotifyArea() {
     loadToken();
 
     if (accessToken) {
-        const r1 = await fetch("https://api.spotify.com/v1/me", {
-            headers: { Authorization: "Bearer " + accessToken }
+        const rMe = await fetch("https://api.spotify.com/v1/me", {
+            headers: { "Authorization": "Bearer " + accessToken }
         });
-        spotifyUser = await r1.json();
+        spotifyUser = await rMe.json();
 
         spotifyPlaylists = await loadPlaylists();
         initPlayer();
@@ -626,16 +651,20 @@ btnShow.onclick = () => {
     showAnswer = true;
     render();
 };
+
 btnOK.onclick = () => {
     if (!currentTrack) return;
     remainingTracks = remainingTracks.filter(t => t.id !== currentTrack.id);
     pickRandomTrack();
 };
+
 btnKO.onclick = () => {
     if (!currentTrack) return;
     pickRandomTrack();
 };
-btnPlayToggle.onclick = togglePlayPause;
+
+btnPlayTgl.onclick = togglePlayPause;
+
 btnReset.onclick = () => {
     initGame(allTracks, currentPlaylistName);
     render();
