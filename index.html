@@ -141,8 +141,8 @@
     }
 
     .track-artist {
-        font-size: 1.2rem;
-        color: #9ca3af;
+        font-size: 2rem;
+        font-weight: 600;
     }
 
     /* --- BUTTONS --- */
@@ -344,7 +344,6 @@ function render() {
         trackArea.innerHTML = `
             <div style="font-size:1rem;color:#9ca3af;">Écoute la musique…</div>
             <div class="hidden-title">Titre caché</div>
-            <div class="track-artist">Artiste caché</div>
         `;
     } else {
         btnShow.style.display = "none";
@@ -352,8 +351,7 @@ function render() {
         btnKO.style.display   = "block";
 
         trackArea.innerHTML = `
-            <div style="font-size:1rem;color:#9ca3af;">Réponse :</div>
-            <div class="track-title">${currentTrack.title}</div>
+			<div class="track-title">${currentTrack.title}</div>
             <div class="track-artist">${currentTrack.artist}</div>
         `;
     }
