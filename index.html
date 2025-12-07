@@ -254,7 +254,7 @@ let allTracks = [];
 let remainingTracks = [];
 let currentTrack = null;
 let currentPlaylistName = "Aucune playlist chargée";
-let currentPlaylistId = null;       // <-- nouvelle variable
+let currentPlaylistId = null;
 let showAnswer = false;
 
 let accessToken = null;
@@ -267,6 +267,7 @@ let isPlaying = false;
 
 /* --- persistance de la progression --- */
 const STORAGE_KEY = "blindtrainer_progress_v1";
+let lastSavedPlaylistId = null; // <-- utilisé pour pré-sélectionner
 
 /* ------------------------------
    DOM ELEMENTS
@@ -318,6 +319,7 @@ function saveProgress() {
     try {
         if (!currentPlaylistId || !allTracks.length) {
             localStorage.removeItem(STORAGE_KEY);
+            lastSavedPlaylistId = null;
             return;
         }
         const state = {
@@ -327,8 +329,22 @@ function saveProgress() {
             savedAt: Date.now()
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        lastSavedPlaylistId = currentPlaylistId; // garder en mémoire
     } catch (e) {
         console.warn("Impossible de sauvegarder la progression", e);
+    }
+}
+
+function loadLastProgressMeta() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (state && state.playlistId) {
+            lastSavedPlaylistId = state.playlistId;
+        }
+    } catch {
+        lastSavedPlaylistId = null;
     }
 }
 
@@ -357,11 +373,9 @@ function restoreProgressForPlaylist(playlistId, freshTracks) {
         }
 
         if (!remaining.length) {
-            // Playlist modifiée ou tout terminé
             return emptyResult;
         }
 
-        // On garde le nom sauvegardé si présent
         if (state.playlistName) {
             currentPlaylistName = state.playlistName;
         }
@@ -448,7 +462,6 @@ function initGame(tracks, name, remainingOverride) {
         render();
     }
 
-    // Sauvegarde à chaque (re)démarrage de playlist
     saveProgress();
 }
 
@@ -464,7 +477,7 @@ function pickRandomTrack() {
         btnShow.style.display = "none";
         btnOK.style.display   = "none";
         btnKO.style.display   = "none";
-        saveProgress(); // on enregistre qu’il ne reste rien
+        saveProgress();
         return;
     }
 
@@ -624,13 +637,12 @@ async function loadTracks(playlistId, playlistLabel) {
             artist: x.artists[0].name
         }));
 
-    currentPlaylistId = playlistId;   // <-- on note la playlist active
+    currentPlaylistId = playlistId;
 
-    // On essaie de restaurer l’avancement si c’est la même playlist
     const restored = restoreProgressForPlaylist(playlistId, tracks);
 
     initGame(restored.tracks, playlistLabel, restored.remainingTracks);
-    render(); // initGame appelle déjà render & saveProgress, mais ce n’est pas grave
+    render();
 }
 
 /* ------------------------------
@@ -703,9 +715,15 @@ function renderSpotifyArea() {
         select.appendChild(opt);
     });
 
+    // Si on a une playlist mémorisée et qu’elle existe dans la liste, la sélectionner
+    if (lastSavedPlaylistId &&
+        spotifyPlaylists.some(p => p.id === lastSavedPlaylistId)) {
+        select.value = lastSavedPlaylistId;
+    }
+
     const btn = document.createElement("button");
     btn.className = "btn-icon";
-    btn.textContent = "▶"; // plus explicite que ⟳
+    btn.textContent = "▶";
     btn.title = "Charger la playlist";
     btn.onclick = () => {
         const opt = select.options[select.selectedIndex];
@@ -721,6 +739,9 @@ function renderSpotifyArea() {
    BOOTSTRAP
 --------------------------------*/
 (async function start() {
+    // récupère juste l'ID de la dernière playlist avant d'afficher l'UI
+    loadLastProgressMeta();
+
     loadToken();
 
     const params = new URLSearchParams(window.location.search);
@@ -756,24 +777,21 @@ btnShow.onclick = () => {
 
 btnOK.onclick = () => {
     if (!currentTrack) return;
-    // On enlève le morceau courant des restants
     remainingTracks = remainingTracks.filter(t => t.id !== currentTrack.id);
     pickRandomTrack();
-    saveProgress(); // on sauvegarde la nouvelle liste de restants
+    saveProgress();
 };
 
 btnKO.onclick = () => {
     if (!currentTrack) return;
-    pickRandomTrack(); // on garde le titre dans la liste
-    // pas besoin de saveProgress: rien n'a changé dans remainingTracks
+    pickRandomTrack();
+    // remainingTracks ne change pas, pas besoin de saveProgress
 };
 
 btnPlayTgl.onclick = togglePlayPause;
 
 btnReset.onclick = () => {
-    // On repart de tous les morceaux de la playlist actuelle
     initGame(allTracks, currentPlaylistName);
-    // initGame appellera déjà saveProgress()
 };
 </script>
 </body>
