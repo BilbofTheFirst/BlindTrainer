@@ -254,6 +254,7 @@ let allTracks = [];
 let remainingTracks = [];
 let currentTrack = null;
 let currentPlaylistName = "Aucune playlist chargée";
+let currentPlaylistId = null;       // <-- nouvelle variable
 let showAnswer = false;
 
 let accessToken = null;
@@ -263,6 +264,9 @@ let spotifyPlaylists = [];
 let spotifyPlayer = null;
 let spotifyDeviceId = null;
 let isPlaying = false;
+
+/* --- persistance de la progression --- */
+const STORAGE_KEY = "blindtrainer_progress_v1";
 
 /* ------------------------------
    DOM ELEMENTS
@@ -308,6 +312,68 @@ function loadToken() {
 }
 
 /* ------------------------------
+   SAUVEGARDE DE LA PROGRESSION
+--------------------------------*/
+function saveProgress() {
+    try {
+        if (!currentPlaylistId || !allTracks.length) {
+            localStorage.removeItem(STORAGE_KEY);
+            return;
+        }
+        const state = {
+            playlistId: currentPlaylistId,
+            playlistName: currentPlaylistName,
+            remainingTrackIds: remainingTracks.map(t => t.id),
+            savedAt: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+        console.warn("Impossible de sauvegarder la progression", e);
+    }
+}
+
+/**
+ * Essaie de restaurer la progression pour une playlist donnée.
+ * @param {string} playlistId
+ * @param {Array} freshTracks - liste complète provenant de Spotify
+ * @returns {{tracks: Array, remainingTracks: Array|null}}
+ */
+function restoreProgressForPlaylist(playlistId, freshTracks) {
+    const emptyResult = { tracks: freshTracks, remainingTracks: null };
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return emptyResult;
+
+        const state = JSON.parse(raw);
+        if (!state || state.playlistId !== playlistId || !Array.isArray(state.remainingTrackIds)) {
+            return emptyResult;
+        }
+
+        const trackMap = new Map(freshTracks.map(t => [t.id, t]));
+        const remaining = [];
+        for (const id of state.remainingTrackIds) {
+            const t = trackMap.get(id);
+            if (t) remaining.push(t);
+        }
+
+        if (!remaining.length) {
+            // Playlist modifiée ou tout terminé
+            return emptyResult;
+        }
+
+        // On garde le nom sauvegardé si présent
+        if (state.playlistName) {
+            currentPlaylistName = state.playlistName;
+        }
+
+        return { tracks: freshTracks, remainingTracks: remaining };
+    } catch (e) {
+        console.warn("Impossible de restaurer la progression", e);
+        return emptyResult;
+    }
+}
+
+/* ------------------------------
    RENDER
 --------------------------------*/
 function updatePlayButton() {
@@ -344,6 +410,7 @@ function render() {
         trackArea.innerHTML = `
             <div style="font-size:1rem;color:#9ca3af;">Écoute la musique…</div>
             <div class="hidden-title">Titre caché</div>
+            <div class="track-artist">Artiste caché</div>
         `;
     } else {
         btnShow.style.display = "none";
@@ -351,8 +418,8 @@ function render() {
         btnKO.style.display   = "block";
 
         trackArea.innerHTML = `
-			<div class="track-title">${currentTrack.title}</div>
-			<div>-</div>
+            <div style="font-size:1rem;color:#9ca3af;">Réponse :</div>
+            <div class="track-title">${currentTrack.title}</div>
             <div class="track-artist">${currentTrack.artist}</div>
         `;
     }
@@ -361,18 +428,28 @@ function render() {
 /* ------------------------------
    BLIND TEST LOGIC
 --------------------------------*/
-function initGame(tracks, name) {
+function initGame(tracks, name, remainingOverride) {
     allTracks = tracks || [];
     currentPlaylistName = name || "Playlist Spotify";
-    remainingTracks = [...allTracks];
+
+    if (Array.isArray(remainingOverride) && remainingOverride.length > 0) {
+        remainingTracks = [...remainingOverride];
+    } else {
+        remainingTracks = [...allTracks];
+    }
+
     showAnswer = false;
     isPlaying = false;
+
     if (remainingTracks.length > 0) {
         pickRandomTrack();
     } else {
         currentTrack = null;
         render();
     }
+
+    // Sauvegarde à chaque (re)démarrage de playlist
+    saveProgress();
 }
 
 function pickRandomTrack() {
@@ -387,6 +464,7 @@ function pickRandomTrack() {
         btnShow.style.display = "none";
         btnOK.style.display   = "none";
         btnKO.style.display   = "none";
+        saveProgress(); // on enregistre qu’il ne reste rien
         return;
     }
 
@@ -546,8 +624,13 @@ async function loadTracks(playlistId, playlistLabel) {
             artist: x.artists[0].name
         }));
 
-    initGame(tracks, playlistLabel);
-    render();
+    currentPlaylistId = playlistId;   // <-- on note la playlist active
+
+    // On essaie de restaurer l’avancement si c’est la même playlist
+    const restored = restoreProgressForPlaylist(playlistId, tracks);
+
+    initGame(restored.tracks, playlistLabel, restored.remainingTracks);
+    render(); // initGame appelle déjà render & saveProgress, mais ce n’est pas grave
 }
 
 /* ------------------------------
@@ -622,7 +705,7 @@ function renderSpotifyArea() {
 
     const btn = document.createElement("button");
     btn.className = "btn-icon";
-    btn.textContent = "▶";
+    btn.textContent = "▶"; // plus explicite que ⟳
     btn.title = "Charger la playlist";
     btn.onclick = () => {
         const opt = select.options[select.selectedIndex];
@@ -673,20 +756,24 @@ btnShow.onclick = () => {
 
 btnOK.onclick = () => {
     if (!currentTrack) return;
+    // On enlève le morceau courant des restants
     remainingTracks = remainingTracks.filter(t => t.id !== currentTrack.id);
     pickRandomTrack();
+    saveProgress(); // on sauvegarde la nouvelle liste de restants
 };
 
 btnKO.onclick = () => {
     if (!currentTrack) return;
-    pickRandomTrack();
+    pickRandomTrack(); // on garde le titre dans la liste
+    // pas besoin de saveProgress: rien n'a changé dans remainingTracks
 };
 
 btnPlayTgl.onclick = togglePlayPause;
 
 btnReset.onclick = () => {
+    // On repart de tous les morceaux de la playlist actuelle
     initGame(allTracks, currentPlaylistName);
-    render();
+    // initGame appellera déjà saveProgress()
 };
 </script>
 </body>
